@@ -40,10 +40,11 @@ namespace MonoLifeUltimate.Systems
          
             _mapCellMapper = mapperService.GetMapper<MapCellComponent>();
             _textureMapper = mapperService.GetMapper<Texture2D>();
+            IMapCreationStrategy<Map> mapCreationStrategy1 = new CaveMapCreationStrategy<Map>(Settings.MapWidth, Settings.MapHeight, 70, 7, 3);
             IMapCreationStrategy<Map> mapCreationStrategy = new RandomRoomsMapCreationStrategy<Map>(Settings.MapWidth, Settings.MapHeight, 100, 7, 3);
-            map = RogueSharp.Map.Create(mapCreationStrategy);
-            _floor = _screen.Content.Load<Texture2D>("floor");
-            _wall = _screen.Content.Load<Texture2D>("wall");
+            map = RogueSharp.Map.Create(mapCreationStrategy1);
+            _floor = _screen.Content.Load<Texture2D>("netherrack_top");
+            _wall = _screen.Content.Load<Texture2D>("nylium");
             foreach (Cell cell in map.GetAllCells())
             {
                 var position = new Vector2(cell.X * Settings.SpriteWidth, cell.Y * Settings.SpriteHeight);
