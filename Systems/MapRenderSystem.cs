@@ -14,7 +14,7 @@ using RogueSharp.MapCreation;
 
 namespace MonoLifeUltimate.Systems
 {
-    public class MapCreateAndRenderSystem : EntityDrawSystem
+    public class MapRenderSystem : EntityDrawSystem
     {
         private readonly GraphicsDevice _graphicsDevice;
         private readonly SpriteBatch _spriteBatch;
@@ -26,13 +26,14 @@ namespace MonoLifeUltimate.Systems
         private GameScreen _screen;
         private OrthographicCamera _camera;
 
-        public MapCreateAndRenderSystem(GraphicsDevice graphicsDevice, GameScreen screen, OrthographicCamera camera)
+        public MapRenderSystem(GraphicsDevice graphicsDevice, GameScreen screen, OrthographicCamera camera, IMap map)
             : base(Aspect.All( typeof(MapCellComponent), typeof(Texture2D)))
         {
             _graphicsDevice = graphicsDevice;
             _spriteBatch = new SpriteBatch(graphicsDevice);
             _screen = screen;
             _camera = camera;
+            this.map = map;
         }
 
         public override void Initialize(IComponentMapperService mapperService)
@@ -40,23 +41,6 @@ namespace MonoLifeUltimate.Systems
          
             _mapCellMapper = mapperService.GetMapper<MapCellComponent>();
             _textureMapper = mapperService.GetMapper<Texture2D>();
-            IMapCreationStrategy<Map> mapCreationStrategy1 = new CaveMapCreationStrategy<Map>(Settings.MapWidth, Settings.MapHeight, 70, 7, 3);
-            IMapCreationStrategy<Map> mapCreationStrategy = new RandomRoomsMapCreationStrategy<Map>(Settings.MapWidth, Settings.MapHeight, 100, 7, 3);
-            map = RogueSharp.Map.Create(mapCreationStrategy1);
-            _floor = _screen.Content.Load<Texture2D>("netherrack_top");
-            _wall = _screen.Content.Load<Texture2D>("nylium");
-            foreach (Cell cell in map.GetAllCells())
-            {
-                var position = new Vector2(cell.X * Settings.SpriteWidth, cell.Y * Settings.SpriteHeight);
-                if (cell.IsWalkable)
-                {
-                    CreateMapCell(position, new Vector2(cell.X, cell.Y), false, _floor);
-                }
-                else
-                {
-                    CreateMapCell(position, new Vector2(cell.X, cell.Y), true, _wall);
-                }
-            }
         }
 
         public override void Draw(GameTime gameTime)
@@ -70,15 +54,10 @@ namespace MonoLifeUltimate.Systems
                 var mapCell = _mapCellMapper.Get(entity);
                 var texture = _textureMapper.Get(entity);
                 _spriteBatch.Draw(texture, mapCell.WorldCoord, Color.White);
+                //_spriteBatch.Draw(texture, mapCell.WorldCoord, texture.Bounds, Color.White, 0, Vector2.Zero, Settings.GetScale(texture), SpriteEffects.None, 0);
             }
             _spriteBatch.End();
         }
-        private int CreateMapCell(Vector2 position, Vector2 mapCoord, bool isWall, Texture2D texture)
-        {
-            var entity = CreateEntity();
-            entity.Attach(new MapCellComponent() { MapCoord = mapCoord, WorldCoord = position, IsExplored = false, IsWall = isWall });
-            entity.Attach(texture);
-            return entity.Id;
-        }
+
     }
 }
